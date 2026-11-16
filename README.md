@@ -5,5 +5,5 @@ Se desarrollará un sistema informático orientado a la gestión de clientes, se
 Crear una aplicación que facilite el manejo de la información de los clientes, el registro de servicios y el control de las reservas.
 ## Integrantes
 - Deisi Sihomara Anzola Guevara
--
+- Juan Sebastian Sanchez Serrano
 -
