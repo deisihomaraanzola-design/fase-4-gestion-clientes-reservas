@@ -14,3 +14,49 @@ class Entidad(ABC):
     @abstractmethod
     def validar_datos(self):
         pass
+    #Creamos un método para consultar el identificador de la identidad
+    def obtener_identificador(self):
+        return self.__identificador
+    #Creamos un método para consultar el nombre de la entidad
+    def obtener_nombre(self):
+        return self.__nombre
+
+#Creamos la clase cliente para registrar los datos cada cliente
+class Cliente(Entidad):
+
+    #Creamos la clase para guardar los datos personales de los clientes
+    def __init__(self, identificador, nombre, telefono, correo):
+        super().__init__(identificador, nombre)
+        self.__telefono = telefono
+        self.__correo = correo
+
+    #Creamos un método para validar los datos del cliente   
+    def validar_datos(self):
+
+        if not self.obtener_identificador():
+            raise ValueError("El identificador de el cliente es necesario")
+        
+        if not isinstance(self.obtener_nombre(), str) or not self.obtener_nombre().strip():
+            raise ValueError("El nombre de el cliente es necesario ")
+
+        if not isinstance(self.__telefono, str) or not self.__telefono.strip():
+            raise ValueError("El telefono de el cliente es necesario")
+
+        if not isinstance(self.__correo, str) or not self.__correo.strip():
+            raise ValueError("El correo de el cliente es necesario")
+
+        if "@" not in self.__correo:
+            raise ValueError("El correo electronico no es valido")
+
+        return True
+    
+    #Creamos un método para consultar el teléfono de el cliente 
+    def obtener_telefono(self):
+        return self.__telefono
+
+    #Creamos un método para consultar el correo de el cliente
+    def obtener_correo(self):
+            return self.__correo
+
+    
+    
