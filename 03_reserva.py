@@ -1,8 +1,3 @@
-
-# Importamos los elementos que necesitaremos para organizar la clase
-from entidad import Entidad
-
-
 # Creamos la clase Reserva para administrar las reservas de los clientes
 class Reserva(Entidad):
 
@@ -112,4 +107,62 @@ class Reserva(Entidad):
             f"Duracion: {self.__duracion} horas. "
             f"Estado: {self.__estado}."
         )
+
+
+# Pruebas de funcionamiento de la clase Reserva
+if __name__ == "__main__":
+
+    try:
+        cliente = Cliente(
+            "C001",
+            "Carlos Perez",
+            "3001234567",
+            "carlos@gmail.com"
+        )
+
+        servicio = ServicioSala(
+            "S001",
+            "Sala de reuniones",
+            50000,
+            10,
+            2
+        )
+
+        reserva = Reserva(
+            "R001",
+            "Reserva de sala",
+            cliente,
+            servicio,
+            2
+        )
+
+        print("\nSISTEMA DE RESERVAS - SOFTWARE FJ")
+        print("-----------------------------------")
+
+        print("\nReserva creada:")
+        print(reserva.describir())
+
+        reserva.confirmar_reserva()
+        print("\nReserva confirmada:")
+        print("Estado:", reserva.obtener_estado())
+
+        costo = reserva.procesar_reserva()
+        print("\nReserva procesada:")
+        print("Costo:", costo)
+        print("Estado:", reserva.obtener_estado())
+
+        reserva_cancelada = Reserva(
+            "R002",
+            "Reserva para cancelar",
+            cliente,
+            servicio,
+            2
+        )
+
+        reserva_cancelada.cancelar_reserva()
+        print("\nPrueba de cancelacion:")
+        print(reserva_cancelada.describir())
+
+    except ValueError as error:
+        print("\nError en la reserva:", error)
 
