@@ -1,6 +1,10 @@
 
 from abc import ABC, abstractmethod
 
+#Importamos la excepción personalizada para controlar los errores de los servivios
+from excepciones_personalizadas import ErrorServicio
+
+
 
 # Clase abstracta que representa los servicios de Software FJ
 class Servicio(ABC):
@@ -16,17 +20,17 @@ class Servicio(ABC):
     def _validar_datos_generales(self):
 
         if not isinstance(self.__identificador, str) or not self.__identificador.strip():
-            raise ValueError("El identificador del servicio es necesario.")
+            raise ErrorServicio("El identificador del servicio es necesario.")
 
         if not isinstance(self.__nombre, str) or not self.__nombre.strip():
-            raise ValueError("El nombre del servicio es necesario.")
+            raise ErrorServicio("El nombre del servicio es necesario.")
 
         if (
             isinstance(self.__tarifa_base, bool)
             or not isinstance(self.__tarifa_base, (int, float))
             or self.__tarifa_base <= 0
         ):
-            raise ValueError("La tarifa base debe ser un número mayor que cero.")
+            raise ErrorServicio("La tarifa base debe ser un número mayor que cero.")
 
     # Métodos para consultar los atributos privados
     def obtener_identificador(self):
@@ -50,7 +54,7 @@ class Servicio(ABC):
                 or not isinstance(valor, (int, float))
                 or not 0 <= valor <= 100
             ):
-                raise ValueError(
+                raise ErrorServicio(
                     f"{nombre} debe estar entre 0 y 100."
                 )
 
@@ -87,14 +91,14 @@ class ServicioSala(Servicio):
             or not isinstance(self.__capacidad, int)
             or self.__capacidad <= 0
         ):
-            raise ValueError("La capacidad de la sala debe ser un entero mayor que cero.")
+            raise ErrorServicio("La capacidad de la sala debe ser un entero mayor que cero.")
 
         if (
             isinstance(self.__horas, bool)
             or not isinstance(self.__horas, (int, float))
             or self.__horas <= 0
         ):
-            raise ValueError("Las horas de reserva deben ser mayores que cero.")
+            raise ErrorServicio("Las horas de reserva deben ser mayores que cero.")
 
         return True
 
@@ -132,21 +136,21 @@ class AlquilerEquipo(Servicio):
     def validar_parametros(self):
 
         if not isinstance(self.__equipo, str) or not self.__equipo.strip():
-            raise ValueError("Debe especificar el nombre del equipo.")
+            raise ErrorServicio("Debe especificar el nombre del equipo.")
 
         if (
             isinstance(self.__cantidad, bool)
             or not isinstance(self.__cantidad, int)
             or self.__cantidad <= 0
         ):
-            raise ValueError("La cantidad de equipos debe ser un entero mayor que cero.")
+            raise ErrorServicio("La cantidad de equipos debe ser un entero mayor que cero.")
 
         if (
             isinstance(self.__horas, bool)
             or not isinstance(self.__horas, (int, float))
             or self.__horas <= 0
         ):
-            raise ValueError("Las horas de alquiler deben ser mayores que cero.")
+            raise ErrorServicio("Las horas de alquiler deben ser mayores que cero.")
 
         return True
 
@@ -192,14 +196,14 @@ class AsesoriaEspecializada(Servicio):
             not isinstance(self.__especialidad, str)
             or not self.__especialidad.strip()
         ):
-            raise ValueError("Debe especificar la especialidad de la asesoria.")
+            raise ErrorServicio("Debe especificar la especialidad de la asesoria.")
 
         if (
             isinstance(self.__horas, bool)
             or not isinstance(self.__horas, (int, float))
             or self.__horas <= 0
         ):
-            raise ValueError("Las horas de asesoria deben ser mayores que cero.")
+            raise ErrorServicio("Las horas de asesoria deben ser mayores que cero.")
 
         return True
 

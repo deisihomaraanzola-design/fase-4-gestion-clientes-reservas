@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 #Importamos la excepción personalizada para controlar los errores de los clientes
-from excepciones import ErrorCliente
+from excepciones_personalizadas import ErrorCliente
 
 
 #Creamos la clase principal del sistema 
