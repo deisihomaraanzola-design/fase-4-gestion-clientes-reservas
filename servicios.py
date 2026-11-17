@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 #Importamos la excepción personalizada para controlar los errores de los servivios
 from excepciones_personalizadas import ErrorServicio
 
-
+#Importamos la funcion que permite guardar los errores en el archivo de registro.
+from registro_logs import registrar_error
 
 # Clase abstracta que representa los servicios de Software FJ
 class Servicio(ABC):
@@ -20,9 +21,11 @@ class Servicio(ABC):
     def _validar_datos_generales(self):
 
         if not isinstance(self.__identificador, str) or not self.__identificador.strip():
+            registrar_error("El identificador del servicio es necesario.", "Servicio")
             raise ErrorServicio("El identificador del servicio es necesario.")
 
         if not isinstance(self.__nombre, str) or not self.__nombre.strip():
+            registrar_error("El nombre del servicio es necesario.", "Servicio")
             raise ErrorServicio("El nombre del servicio es necesario.")
 
         if (
@@ -30,6 +33,7 @@ class Servicio(ABC):
             or not isinstance(self.__tarifa_base, (int, float))
             or self.__tarifa_base <= 0
         ):
+            registrar_error("La tarifa base debe ser un número mayor que cero.", "Servicio")
             raise ErrorServicio("La tarifa base debe ser un número mayor que cero.")
 
     # Métodos para consultar los atributos privados
@@ -54,6 +58,7 @@ class Servicio(ABC):
                 or not isinstance(valor, (int, float))
                 or not 0 <= valor <= 100
             ):
+                registrar_error(f"{nombre} debe estar entre 0 y 100.", "Servicio")
                 raise ErrorServicio(
                     f"{nombre} debe estar entre 0 y 100."
                 )
@@ -91,6 +96,7 @@ class ServicioSala(Servicio):
             or not isinstance(self.__capacidad, int)
             or self.__capacidad <= 0
         ):
+            registrar_error("La capacidad de la sala debe ser un entero mayor que cero.", "Servicio")
             raise ErrorServicio("La capacidad de la sala debe ser un entero mayor que cero.")
 
         if (
@@ -98,6 +104,7 @@ class ServicioSala(Servicio):
             or not isinstance(self.__horas, (int, float))
             or self.__horas <= 0
         ):
+            registrar_error("Las horas de reserva deben ser mayores que cero.", "Servicio")
             raise ErrorServicio("Las horas de reserva deben ser mayores que cero.")
 
         return True
@@ -136,6 +143,7 @@ class AlquilerEquipo(Servicio):
     def validar_parametros(self):
 
         if not isinstance(self.__equipo, str) or not self.__equipo.strip():
+            registrar_error("Debe especificar el nombre del equipo.", "Servicio")
             raise ErrorServicio("Debe especificar el nombre del equipo.")
 
         if (
@@ -143,6 +151,7 @@ class AlquilerEquipo(Servicio):
             or not isinstance(self.__cantidad, int)
             or self.__cantidad <= 0
         ):
+            registrar_error("La cantidad de equipos debe ser un entero mayor que cero.", "Servicio")
             raise ErrorServicio("La cantidad de equipos debe ser un entero mayor que cero.")
 
         if (
@@ -150,6 +159,7 @@ class AlquilerEquipo(Servicio):
             or not isinstance(self.__horas, (int, float))
             or self.__horas <= 0
         ):
+            registrar_error("Las horas de alquiler deben ser mayores que cero.", "Servicio")
             raise ErrorServicio("Las horas de alquiler deben ser mayores que cero.")
 
         return True
@@ -196,6 +206,7 @@ class AsesoriaEspecializada(Servicio):
             not isinstance(self.__especialidad, str)
             or not self.__especialidad.strip()
         ):
+            registrar_error("Debe especificar la especialidad.", "Servicio")
             raise ErrorServicio("Debe especificar la especialidad de la asesoria.")
 
         if (
@@ -203,6 +214,7 @@ class AsesoriaEspecializada(Servicio):
             or not isinstance(self.__horas, (int, float))
             or self.__horas <= 0
         ):
+            registrar_error("Las horas de asesoria deben ser mayores que cero.", "Servicio")
             raise ErrorServicio("Las horas de asesoria deben ser mayores que cero.")
 
         return True
@@ -245,3 +257,10 @@ if __name__ == "__main__":
         )
         print(f"Validacion: {servicio.validar_parametros()}")
         print("-----------------------------------")
+
+    #Probamos el registro de errores al crear un servicio invalido.
+    try:
+        servicio_invalido = ServicioSala("", "Sala invalida", 50000, 10, 2)
+    except ErrorServicio as error:
+        registrar_error(error, "Prueba de servicio")
+        print("\nError esperado en la prueba:", error)

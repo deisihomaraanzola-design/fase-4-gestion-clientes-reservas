@@ -4,6 +4,9 @@ from entidad import Cliente
 from servicios import ServicioSala
 from excepciones_personalizadas import ErrorSistema, ErrorReserva, OperacionNoPermitida
 
+#Importamos la funcion para registrar los errores de las reservas
+from registro_logs import registrar_error
+
 # Creamos la clase Reserva para administrar las reservas de los clientes
 class Reserva(Entidad):
 
@@ -21,21 +24,27 @@ class Reserva(Entidad):
     def validar_datos(self):
 
         if not isinstance(self.obtener_identificador(), str) or not self.obtener_identificador().strip():
+            registrar_error("El identificador de la reserva es necesario", "Reserva")
             raise ErrorReserva("El identificador de la reserva es necesario")
 
         if not isinstance(self.obtener_nombre(), str) or not self.obtener_nombre().strip():
+            registrar_error("El nombre de la reserva es necesario", "Reserva")
             raise ErrorReserva("El nombre de la reserva es necesario")
 
         if not isinstance(self.__cliente, Entidad):
+            registrar_error("Debe registrar un cliente valido", "Reserva")
             raise ErrorReserva("Debe registrar un cliente valido")
 
         if not callable(getattr(self.__cliente, "validar_datos", None)):
+            registrar_error("El cliente no tiene un metodo de validacion", "Reserva")
             raise ErrorReserva("El cliente no tiene un metodo de validacion")
 
         if not callable(getattr(self.__servicio, "validar_parametros", None)):
-            raise ErrorReserva("Debe seleccionar un servicio valido")
+           registrar_error("Debe seleccionar un servicio valido", "Reserva")
+           raise ErrorReserva("Debe seleccionar un servicio valido")
 
         if not callable(getattr(self.__servicio, "calcular_costo", None)):
+            registrar_error("El servicio no permite calcular su costo", "Reserva")
             raise ErrorReserva("El servicio no permite calcular su costo")
 
         if (
@@ -43,6 +52,7 @@ class Reserva(Entidad):
             or not isinstance(self.__duracion, (int, float))
             or self.__duracion <= 0
         ):
+            registrar_error("La duracion de la reserva debe ser mayor que cero", "Reserva")
             raise ErrorReserva("La duracion de la reserva debe ser mayor que cero")
 
         self.__cliente.validar_datos()
@@ -54,6 +64,7 @@ class Reserva(Entidad):
     def confirmar_reserva(self):
 
         if self.__estado != "Pendiente":
+            registrar_error("Solo se pueden confirmar reservas pendientes", "Reserva")
             raise ErrorReserva("Solo se pueden confirmar reservas pendientes")
 
         self.validar_datos()
@@ -65,9 +76,11 @@ class Reserva(Entidad):
     def cancelar_reserva(self):
 
         if self.__estado == "Cancelada":
+            registrar_error("La reserva ya se encuentra cancelada", "Reserva")
             raise ErrorReserva("La reserva ya se encuentra cancelada")
 
         if self.__estado == "Procesada":
+            registrar_error("No se puede cancelar una reserva procesada", "Reserva")
             raise ErrorReserva("No se puede cancelar una reserva procesada")
 
         self.__estado = "Cancelada"
@@ -78,6 +91,7 @@ class Reserva(Entidad):
     def procesar_reserva(self):
 
         if self.__estado != "Confirmada":
+            registrar_error("La reserva debe estar confirmada para procesarse", "Reserva")
             raise ErrorReserva("La reserva debe estar confirmada para procesarse")
 
         self.validar_datos()
@@ -171,4 +185,17 @@ if __name__ == "__main__":
 
     except ErrorSistema as error:
         print("\nError en la reserva:", error)
+
+    #Probamos el registro de errores al crear una reserva invalida.
+    try:
+        reserva_invalida = Reserva(
+           "",
+           "Reserva invalida",
+           cliente,
+           servicio,
+           2
+    )
+    except ErrorReserva as error:
+        registrar_error(error, "Prueba de reserva")
+        print("\nError esperado en la prueba:", error)
 

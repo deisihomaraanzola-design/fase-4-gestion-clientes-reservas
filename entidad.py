@@ -5,6 +5,9 @@ from abc import ABC, abstractmethod
 #Importamos la excepción personalizada para controlar los errores de los clientes
 from excepciones_personalizadas import ErrorCliente
 
+#Importamos la funcion que permite guardar los errores en el archivo de registro
+from registro_logs import registrar_error
+
 
 #Creamos la clase principal del sistema 
 class Entidad(ABC):
@@ -38,18 +41,23 @@ class Cliente(Entidad):
     def validar_datos(self):
 
         if not self.obtener_identificador():
+            registrar_error("El identificador del cliente es necesario", "Cliente")
             raise ErrorCliente("El identificador del cliente es necesario")
         
         if not isinstance(self.obtener_nombre(), str) or not self.obtener_nombre().strip():
+            registrar_error("El nombre del cliente es necesario", "Cliente")
             raise ErrorCliente("El nombre del cliente es necesario ")
 
         if not isinstance(self.__telefono, str) or not self.__telefono.strip():
+            registrar_error("El telefono del cliente es necesario", "Cliente")
             raise ErrorCliente("El telefono del cliente es necesario")
 
         if not isinstance(self.__correo, str) or not self.__correo.strip():
+            registrar_error("El correo del cliente es necesario", "Cliente")
             raise ErrorCliente("El correo del cliente es necesario")
 
         if "@" not in self.__correo:
+            registrar_error("El correo electronico no es valido", "Cliente")
             raise ErrorCliente("El correo electronico no es valido")
 
         return True
