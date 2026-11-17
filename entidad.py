@@ -2,6 +2,10 @@
 #importamos los elementos que necesitaremos para organizar las clases
 from abc import ABC, abstractmethod
 
+#Importamos la excepción personalizada para controlar los errores de los clientes
+from excepciones import ErrorCliente
+
+
 #Creamos la clase principal del sistema 
 class Entidad(ABC):
 
@@ -34,19 +38,19 @@ class Cliente(Entidad):
     def validar_datos(self):
 
         if not self.obtener_identificador():
-            raise ValueError("El identificador de el cliente es necesario")
+            raise ErrorCliente("El identificador del cliente es necesario")
         
         if not isinstance(self.obtener_nombre(), str) or not self.obtener_nombre().strip():
-            raise ValueError("El nombre de el cliente es necesario ")
+            raise ErrorCliente("El nombre del cliente es necesario ")
 
         if not isinstance(self.__telefono, str) or not self.__telefono.strip():
-            raise ValueError("El telefono de el cliente es necesario")
+            raise ErrorCliente("El telefono del cliente es necesario")
 
         if not isinstance(self.__correo, str) or not self.__correo.strip():
-            raise ValueError("El correo de el cliente es necesario")
+            raise ErrorCliente("El correo del cliente es necesario")
 
         if "@" not in self.__correo:
-            raise ValueError("El correo electronico no es valido")
+            raise ErrorCliente("El correo electronico no es valido")
 
         return True
     
