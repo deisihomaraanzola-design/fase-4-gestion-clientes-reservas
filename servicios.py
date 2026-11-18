@@ -108,15 +108,24 @@ class ServicioSala(Servicio):
             raise ErrorServicio("Las horas de reserva deben ser mayores que cero.")
 
         return True
-
     def calcular_costo(self, impuesto=0, descuento=0):
-        self.validar_parametros()
-        self._validar_porcentajes(impuesto, descuento)
+        try:
+            self.validar_parametros()
+            self._validar_porcentajes(impuesto, descuento)
 
-        subtotal = self.obtener_tarifa_base() * self.__horas
-        total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
+            subtotal = self.obtener_tarifa_base() * self.__horas
+            total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
-        return round(total, 2)
+            return round(total, 2)
+
+        except ErrorServicio:
+            raise
+
+        except Exception as error:
+            registrar_error(error, "Calculo del servicio de sala")
+            raise ErrorServicio(
+                "No fue posible calcular el costo del servicio de sala."
+            ) from error
 
     def describir(self):
         return (
@@ -165,18 +174,28 @@ class AlquilerEquipo(Servicio):
         return True
 
     def calcular_costo(self, impuesto=0, descuento=0):
-        self.validar_parametros()
-        self._validar_porcentajes(impuesto, descuento)
+        try:
+            self.validar_parametros()
+            self._validar_porcentajes(impuesto, descuento)
 
-        subtotal = (
-            self.obtener_tarifa_base()
-            * self.__cantidad
-            * self.__horas
-        )
+            subtotal = (
+                self.obtener_tarifa_base()
+                * self.__cantidad
+                * self.__horas
+            )
 
-        total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
+            total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
-        return round(total, 2)
+            return round(total, 2)
+
+        except ErrorServicio:
+            raise
+
+        except Exception as error:
+            registrar_error(error, "Calculo del alquiler de equipos")
+            raise ErrorServicio(
+                "No fue posible calcular el costo del alquiler de equipos."
+            ) from error
 
     def describir(self):
         return (
@@ -220,13 +239,23 @@ class AsesoriaEspecializada(Servicio):
         return True
 
     def calcular_costo(self, impuesto=0, descuento=0):
-        self.validar_parametros()
-        self._validar_porcentajes(impuesto, descuento)
+        try:
+            self.validar_parametros()
+            self._validar_porcentajes(impuesto, descuento)
 
-        subtotal = self.obtener_tarifa_base() * self.__horas
-        total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
+            subtotal = self.obtener_tarifa_base() * self.__horas
+            total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
-        return round(total, 2)
+            return round(total, 2)
+
+        except ErrorServicio:
+            raise
+
+        except Exception as error:
+            registrar_error(error, "Calculo de asesoria especializada")
+            raise ErrorServicio(
+                "No fue posible calcular el costo de la asesoria especializada."
+            ) from error
 
     def describir(self):
         return (
@@ -261,6 +290,26 @@ if __name__ == "__main__":
     #Probamos el registro de errores al crear un servicio invalido.
     try:
         servicio_invalido = ServicioSala("", "Sala invalida", 50000, 10, 2)
+
     except ErrorServicio as error:
         registrar_error(error, "Prueba de servicio")
         print("\nError esperado en la prueba:", error)
+
+    else:
+        print("El servicio se creo correctamente")
+
+    finally:
+        print("La prueba de servicio ha finalizado")
+
+    #Probamos el encadenamiento de excepciones en los servicios.
+    servicio_prueba = ServicioSala("S002", "Sala de prueba", 50000, 10, 2)
+
+    servicio_prueba.obtener_tarifa_base = lambda: 1 / 0
+
+    try:
+        servicio_prueba.calcular_costo()
+
+    except ErrorServicio as error:
+        registrar_error(error, "Prueba de encadenamiento")
+        print("\nError generado:", type(error).__name__)
+        print("Causa original:", type(error.__cause__).__name__)
