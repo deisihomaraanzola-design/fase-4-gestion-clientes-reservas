@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 #Importamos la excepción personalizada para controlar los errores de los servivios
 from excepciones_personalizadas import ErrorServicio
 
-#Importamos la funcion que permite guardar los errores en el archivo de registro.
+#Importamos la funcion que permite guardar los errores y eventos en el archivo de registro.
 from registro_logs import registrar_error, registrar_evento
 
 # Clase abstracta que representa los servicios de Software FJ
@@ -108,6 +108,7 @@ class ServicioSala(Servicio):
             raise ErrorServicio("Las horas de reserva deben ser mayores que cero.")
 
         return True
+
     def calcular_costo(self, impuesto=0, descuento=0):
         try:
             self.validar_parametros()
@@ -115,9 +116,6 @@ class ServicioSala(Servicio):
 
             subtotal = self.obtener_tarifa_base() * self.__horas
             total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
-
-            registrar_evento("Costo de sala calculado correctamente.", "Servicios")
-            return round(total, 2)
 
         except ErrorServicio:
             raise
@@ -127,6 +125,19 @@ class ServicioSala(Servicio):
             raise ErrorServicio(
                 "No fue posible calcular el costo del servicio de sala."
             ) from error
+
+        else:
+            registrar_evento(
+                "Costo de sala calculado correctamente.",
+                "Servicios"
+            )
+            return round(total, 2)
+
+        finally:
+            registrar_evento(
+                "Finalizo el calculo del servicio de sala.",
+                "Servicios"
+            )
 
     def describir(self):
         return (
@@ -187,9 +198,6 @@ class AlquilerEquipo(Servicio):
 
             total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
-            registrar_evento("Costo de alquiler de equipos calculado correctamente.", "Servicios")
-            return round(total, 2)
-
         except ErrorServicio:
             raise
 
@@ -198,6 +206,19 @@ class AlquilerEquipo(Servicio):
             raise ErrorServicio(
                 "No fue posible calcular el costo del alquiler de equipos."
             ) from error
+
+        else:
+            registrar_evento(
+                "Costo de alquiler de equipos calculado correctamente.",
+                "Servicios"
+            )
+            return round(total, 2)
+
+        finally:
+            registrar_evento(
+                "Finalizo el calculo del alquiler de equipos.",
+                "Servicios"
+            )
 
     def describir(self):
         return (
@@ -248,9 +269,6 @@ class AsesoriaEspecializada(Servicio):
             subtotal = self.obtener_tarifa_base() * self.__horas
             total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
-            registrar_evento("Costo de asesoria especializada calculado correctamente.", "Servicios")
-            return round(total, 2) 
-
         except ErrorServicio:
             raise
 
@@ -259,6 +277,19 @@ class AsesoriaEspecializada(Servicio):
             raise ErrorServicio(
                 "No fue posible calcular el costo de la asesoria especializada."
             ) from error
+
+        else:
+            registrar_evento(
+                "Costo de asesoria especializada calculado correctamente.",
+                "Servicios"
+            )
+            return round(total, 2)
+
+        finally:
+            registrar_evento(
+                "Finalizo el calculo de la asesoria especializada.",
+                "Servicios"
+            )
 
     def describir(self):
         return (
