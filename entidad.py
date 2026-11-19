@@ -93,5 +93,3 @@ class Cliente(Entidad):
     #Creamos un método para consultar el correo de el cliente
     def obtener_correo(self):
         return self.__correo
-
-            return self.__correo
