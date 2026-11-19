@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from excepciones_personalizadas import ErrorServicio
 
 #Importamos la funcion que permite guardar los errores en el archivo de registro.
-from registro_logs import registrar_error
+from registro_logs import registrar_error, registrar_evento
 
 # Clase abstracta que representa los servicios de Software FJ
 class Servicio(ABC):
@@ -116,6 +116,7 @@ class ServicioSala(Servicio):
             subtotal = self.obtener_tarifa_base() * self.__horas
             total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
+            registrar_evento("Costo de sala calculado correctamente.", "Servicios")
             return round(total, 2)
 
         except ErrorServicio:
@@ -186,6 +187,7 @@ class AlquilerEquipo(Servicio):
 
             total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
+            registrar_evento("Costo de alquiler de equipos calculado correctamente.", "Servicios")
             return round(total, 2)
 
         except ErrorServicio:
@@ -246,7 +248,8 @@ class AsesoriaEspecializada(Servicio):
             subtotal = self.obtener_tarifa_base() * self.__horas
             total = subtotal * (1 - descuento / 100) * (1 + impuesto / 100)
 
-            return round(total, 2)
+            registrar_evento("Costo de asesoria especializada calculado correctamente.", "Servicios")
+            return round(total, 2) 
 
         except ErrorServicio:
             raise
