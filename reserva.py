@@ -177,25 +177,357 @@ if __name__ == "__main__":
             cliente,
             servicio,
             2
+from entidad import Entidad, Cliente
+from servicios import ServicioSala
+from excepciones_personalizadas import (
+    ErrorSistema,
+    ErrorReserva,
+    OperacionNoPermitida
+)
+from registro_logs import registrar_error, registrar_evento
+
+
+# Clase Reserva para administrar las reservas de los clientes
+class Reserva(Entidad):
+
+    # Constructor para guardar los datos de cada reserva
+    def __init__(self, identificador, nombre, cliente, servicio, duracion):
+        super().__init__(identificador, nombre)
+        self.__cliente = cliente
+        self.__servicio = servicio
+        self.__duracion = duracion
+        self.__estado = "Pendiente"
+
+        self.validar_datos()
+
+    # Metodo para validar los datos de la reserva
+    def validar_datos(self):
+
+        try:
+            if (
+                not isinstance(self.obtener_identificador(), str)
+                or not self.obtener_identificador().strip()
+            ):
+                raise ErrorReserva(
+                    "El identificador de la reserva es necesario"
+                )
+
+            if (
+                not isinstance(self.obtener_nombre(), str)
+                or not self.obtener_nombre().strip()
+            ):
+                raise ErrorReserva(
+                    "El nombre de la reserva es necesario"
+                )
+
+            if not isinstance(self.__cliente, Entidad):
+                raise ErrorReserva(
+                    "Debe registrar un cliente valido"
+                )
+
+            if not callable(getattr(self.__cliente, "validar_datos", None)):
+                raise ErrorReserva(
+                    "El cliente no tiene un metodo de validacion"
+                )
+
+            if not callable(getattr(self.__servicio, "validar_parametros", None)):
+                raise ErrorReserva(
+                    "Debe seleccionar un servicio valido"
+                )
+
+            if not callable(getattr(self.__servicio, "calcular_costo", None)):
+                raise ErrorReserva(
+                    "El servicio no permite calcular su costo"
+                )
+
+            if (
+                isinstance(self.__duracion, bool)
+                or not isinstance(self.__duracion, (int, float))
+                or self.__duracion <= 0
+            ):
+                raise ErrorReserva(
+                    "La duracion de la reserva debe ser mayor que cero"
+                )
+
+            self.__cliente.validar_datos()
+            self.__servicio.validar_parametros()
+
+        except ErrorSistema as error:
+            registrar_error(error, "Validacion de reserva")
+            raise
+
+        except Exception as error:
+            registrar_error(error, "Validacion de reserva")
+            raise ErrorReserva(
+                "Ocurrio un error inesperado al validar la reserva"
+            ) from error
+
+        else:
+            registrar_evento(
+                "Los datos de la reserva fueron validados correctamente.",
+                "Reserva"
+            )
+            return True
+
+        finally:
+            registrar_evento(
+                "Finalizo el proceso de validacion.",
+                "Reserva"
+            )
+
+    # Metodo para confirmar la reserva
+    def confirmar_reserva(self):
+
+        try:
+            if self.__estado != "Pendiente":
+                raise OperacionNoPermitida(
+                    "Solo se pueden confirmar reservas pendientes"
+                )
+
+            self.validar_datos()
+
+        except ErrorSistema as error:
+            registrar_error(error, "Confirmacion de reserva")
+            raise
+
+        except Exception as error:
+            registrar_error(error, "Confirmacion de reserva")
+            raise ErrorReserva(
+                "No fue posible confirmar la reserva"
+            ) from error
+
+        else:
+            self.__estado = "Confirmada"
+
+            registrar_evento(
+                "La reserva fue confirmada correctamente.",
+                "Reserva"
+            )
+            return True
+
+        finally:
+            registrar_evento(
+                "Finalizo el proceso de confirmacion.",
+                "Reserva"
+            )
+
+    # Metodo para cancelar la reserva
+    def cancelar_reserva(self):
+
+        try:
+            if self.__estado == "Cancelada":
+                raise OperacionNoPermitida(
+                    "La reserva ya se encuentra cancelada"
+                )
+
+            if self.__estado == "Procesada":
+                raise OperacionNoPermitida(
+                    "No se puede cancelar una reserva procesada"
+                )
+
+        except ErrorSistema as error:
+            registrar_error(error, "Cancelacion de reserva")
+            raise
+
+        except Exception as error:
+            registrar_error(error, "Cancelacion de reserva")
+            raise ErrorReserva(
+                "No fue posible cancelar la reserva"
+            ) from error
+
+        else:
+            self.__estado = "Cancelada"
+
+            registrar_evento(
+                "La reserva fue cancelada correctamente.",
+                "Reserva"
+            )
+            return True
+
+        finally:
+            registrar_evento(
+                "Finalizo el proceso de cancelacion.",
+                "Reserva"
+            )
+
+    # Metodo para procesar la reserva
+    def procesar_reserva(self):
+
+        try:
+            if self.__estado != "Confirmada":
+                raise OperacionNoPermitida(
+                    "La reserva debe estar confirmada para procesarse"
+                )
+
+            self.validar_datos()
+
+            costo = self.__servicio.calcular_costo()
+
+        except ErrorSistema as error:
+            registrar_error(error, "Procesamiento de reserva")
+            raise
+
+        except Exception as error:
+            registrar_error(error, "Procesamiento de reserva")
+            raise ErrorReserva(
+                "Ocurrio un error al procesar la reserva"
+            ) from error
+
+        else:
+            self.__estado = "Procesada"
+
+            registrar_evento(
+                "La reserva fue procesada correctamente.",
+                "Reserva"
+            )
+            return costo
+
+        finally:
+            registrar_evento(
+                "Finalizo el proceso de procesamiento.",
+                "Reserva"
+            )
+
+    # Metodo para consultar el estado de la reserva
+    def obtener_estado(self):
+        return self.__estado
+
+    # Metodo para consultar el cliente de la reserva
+    def obtener_cliente(self):
+        return self.__cliente
+
+    # Metodo para consultar el servicio de la reserva
+    def obtener_servicio(self):
+        return self.__servicio
+
+    # Metodo para consultar la duracion de la reserva
+    def obtener_duracion(self):
+        return self.__duracion
+
+    # Metodo para describir la reserva
+    def describir(self):
+
+        return (
+            f"Reserva: {self.obtener_nombre()}. "
+            f"Cliente: {self.__cliente.obtener_nombre()}. "
+            f"Servicio: {self.__servicio.obtener_nombre()}. "
+            f"Duracion: {self.__duracion} horas. "
+            f"Estado: {self.__estado}."
         )
 
-        reserva_cancelada.cancelar_reserva()
-        print("\nPrueba de cancelacion:")
-        print(reserva_cancelada.describir())
+
+# Pruebas de funcionamiento de la clase Reserva
+if __name__ == "__main__":
+
+    print("\nSISTEMA DE RESERVAS - SOFTWARE FJ")
+    print("-----------------------------------")
+
+    # Creamos el cliente y el servicio para las pruebas
+    try:
+        cliente = Cliente(
+            "C001",
+            "Carlos Perez",
+            "3001234567",
+            "carlos@gmail.com"
+        )
+
+        servicio = ServicioSala(
+            "S001",
+            "Sala de reuniones",
+            50000,
+            10,
+            2
+        )
 
     except ErrorSistema as error:
-        print("\nError en la reserva:", error)
+        print("\nNo fue posible preparar las pruebas:", error)
 
-    #Probamos el registro de errores al crear una reserva invalida.
-    try:
-        reserva_invalida = Reserva(
-           "",
-           "Reserva invalida",
-           cliente,
-           servicio,
-           2
-    )
-    except ErrorReserva as error:
-        registrar_error(error, "Prueba de reserva")
-        print("\nError esperado en la prueba:", error)
+    else:
+
+        # Prueba 1: Crear, confirmar y procesar una reserva
+        try:
+            reserva = Reserva(
+                "R001",
+                "Reserva de sala",
+                cliente,
+                servicio,
+                2
+            )
+
+            print("\nPrueba 1: Crear y procesar reserva")
+            print(reserva.describir())
+
+            reserva.confirmar_reserva()
+
+            print("Estado despues de confirmar:", reserva.obtener_estado())
+
+            costo = reserva.procesar_reserva()
+
+            print("Costo del servicio:", costo)
+            print("Estado final:", reserva.obtener_estado())
+
+        except ErrorSistema as error:
+            print("Error en la prueba 1:", error)
+
+        # Prueba 2: Cancelar una reserva pendiente
+        try:
+            reserva_cancelada = Reserva(
+                "R002",
+                "Reserva para cancelar",
+                cliente,
+                servicio,
+                2
+            )
+
+            reserva_cancelada.cancelar_reserva()
+
+            print("\nPrueba 2: Cancelacion de reserva")
+            print(reserva_cancelada.describir())
+
+        except ErrorSistema as error:
+            print("Error en la prueba 2:", error)
+
+        # Prueba 3: Intentar crear una reserva invalida
+        try:
+            reserva_invalida = Reserva(
+                "",
+                "Reserva invalida",
+                cliente,
+                servicio,
+                2
+            )
+
+        except ErrorSistema as error:
+            registrar_error(error, "Prueba de reserva invalida")
+            print("\nPrueba 3: Error esperado")
+            print(error)
+
+        # Prueba 4: Intentar procesar una reserva pendiente
+        try:
+            reserva_pendiente = Reserva(
+                "R003",
+                "Reserva pendiente",
+                cliente,
+                servicio,
+                2
+            )
+
+            reserva_pendiente.procesar_reserva()
+
+        except ErrorSistema as error:
+            registrar_error(error, "Prueba de operacion no permitida")
+            print("\nPrueba 4: Operacion no permitida")
+            print(error)
+
+        # Prueba 5: Intentar cancelar una reserva procesada
+        try:
+            reserva.cancelar_reserva()
+
+        except ErrorSistema as error:
+            registrar_error(error, "Prueba de cancelacion no permitida")
+            print("\nPrueba 5: Operacion no permitida")
+            print(error)
+
+    finally:
+        print("\nFinalizaron las pruebas del modulo de reservas.")
 
